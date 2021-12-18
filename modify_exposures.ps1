@@ -108,7 +108,7 @@ IF($open_count -eq 0){
 # Input iterations number
 [decimal]$max = 0;
 while ($max -le 0) { # Keep asking for a number if the input is invalid
-    [decimal]$max = Read-Host "Number Starting Exposure Value (In Seconds)"
+    [decimal]$max = Read-Host "Enter Maximum Exposure Value (In Seconds)"
 }
 IF($max.ToString() -notlike "*.*")
     {
