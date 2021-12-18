@@ -34,6 +34,7 @@ Function Get-FileName
     $outer.Close();
     } )
     $outer.ShowDialog()
+    $OpenFileDialog.FileName
     } 
 #end function Get-FileName
 
