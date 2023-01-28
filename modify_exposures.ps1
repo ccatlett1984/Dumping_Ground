@@ -1,9 +1,26 @@
 # UVtools Script
-########################
-# Script Configuration #
-########################
-$_CORE_PATH     = 'C:\Program Files (x86)\UVtools'
-$coreDll = 'UVtools.Core.dll'
+#Testing for powershell v7, it's required
+# Check for required PowerShell version (7+)
+if (!($PSVersionTable.PSVersion.Major -ge 7)) {
+  try {
+    
+    # Install PowerShell 7
+    if(!(Test-Path "$env:SystemDrive\Program Files\PowerShell\7")) {
+      Write-Output 'Installing PowerShell version 7...'
+      Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-powershell.ps1) } -UseMSI -Quiet"
+    }
+
+    # Refresh PATH
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    
+    # Restart script in PowerShell 7
+    pwsh "`"$PSCommandPath`"" (($MyInvocation.Line -split '\.ps1[\s\''\"]\s*', 2)[-1]).Split(' ')
+
+  } catch {
+    Write-Output 'PowerShell 7 was not installed. Update PowerShell and try again.'
+    throw $Error
+  } finally { Exit }
+}
 $inputFile = $null
 $slicerFile = $null
 #Find the User Documents folder, for default folder when running Get-Filename
@@ -39,31 +56,26 @@ Function Get-FileName
 #end function Get-FileName
 
 Write-Output "Loading UVTools.Core.dll"
-try
-    {
-    if(Test-Path "$Env:UVTOOLS_PATH\$coreDll" -PathType Leaf)
+    try
         {
-        Add-Type -Path "$Env:UVTOOLS_PATH\UVtools.Core.dll"
+        Add-Type -Path "C:\Program Files\UVtools\UVtools.Core.dll"
         }
-    if(Test-Path "${_CORE_PATH}\$coreDll" -PathType Leaf)
+    catch
         {
-        Add-Type -Path "${_CORE_PATH}\$coreDll"
-        } 
-    else 
-        {
-        Write-Error "Unable to find $coreDll"
-        $folderpath = 'C:\Program Files (x86)\'
-        Add-Type -Path ((Get-Filename $folderpath "Please Select the UVTools.Core.dll file on your system.")[2])
-        return
-        }
-    }
-catch
-    {
-    Write-Error "Unable to find $coreDll, please edit line `#9 of the script to point to the location of UVTools.Core.dll, normal path would be `"$_CORE_PATH\$coreDll`""
-    Start-Sleep -seconds 3
-    pause 
-    exit 
-    }
+        try
+            {
+            Add-Type -Path "C:\Program Files (x86)\UVtools\UVtools.Core.dll"
+            }
+        catch
+            {
+            Write-Error "Unable to find $coreDll"
+            $folderpath = 'C:\Program Files\'
+            Add-Type -Path ((Get-Filename $folderpath "Please Select the UVTools.Core.dll file on your system.")[2])
+            return
+            }
+        }  
+        
+
 # Progress variable, not really used here but require with some methods
 $progress = New-Object UVtools.Core.Operations.OperationProgress
 
